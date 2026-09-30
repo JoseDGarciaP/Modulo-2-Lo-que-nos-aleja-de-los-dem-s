@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#3d8b3d">
+<title>Froggy Jumps · Módulo 2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --pad:#5cb85c; --pad-dark:#3d8b3d; --ink:#123040; --muted:#4d6b78; --card:#ffffff;
+    --ok:#2e9e4f; --bad:#d64545;
+    --ff-body:'Nunito',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --ff-title:'Baloo 2',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+    --gap:clamp(8px,2vw,16px);
+    --radius:clamp(14px,2.5vw,22px);
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  html,body{margin:0}
+  body{
+    font-family:var(--ff-body); color:var(--ink);
+    background:linear-gradient(180deg,#d9f3ea 0%,#bfe8e0 100%) fixed; min-height:100vh; min-height:100dvh;
+    font-size:clamp(15px,1.1vw + 11px,18px);
+  }
+  button,input{font-family:inherit}
+  h1,h2,h3{font-family:var(--ff-title);margin:0;line-height:1.15}
+  .wrap{
+    width:100%;max-width:1040px;margin:0 auto;
+    padding:var(--gap) max(var(--gap),env(safe-area-inset-right)) calc(var(--gap)*2) max(var(--gap),env(safe-area-inset-left));
+  }
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:var(--gap)}
+  header h1{font-size:clamp(1.3rem,3.5vw,2.1rem);color:var(--pad-dark)}
+  header h1 small{display:block;color:var(--muted);font-family:var(--ff-body);font-weight:700;font-size:clamp(.72rem,1.6vw,.9rem);margin-top:2px}
+
+  .btn{
+    font:800 1em var(--ff-body);border:0;border-radius:14px;padding:.75em 1.2em;cursor:pointer;min-height:46px;
+    background:var(--pad-dark);color:#fff;box-shadow:0 4px 0 #2a662a;transition:transform .08s, box-shadow .08s;
+    display:inline-flex;align-items:center;justify-content:center;gap:.4em;white-space:nowrap;touch-action:manipulation;
+  }
+  .btn:active{transform:translateY(3px);box-shadow:0 1px 0 #2a662a}
+  .btn.secondary{background:#fff;color:var(--ink);box-shadow:0 4px 0 #9bb8c2}
+  .btn.danger{background:var(--bad);box-shadow:0 4px 0 #8f2a2a}
+  .btn:focus-visible,.opt:focus-visible,input:focus-visible{outline:3px solid #f5b700;outline-offset:2px}
+  .card{background:var(--card);border-radius:var(--radius);padding:clamp(14px,3vw,26px);box-shadow:0 8px 24px rgba(18,48,64,.12)}
+  .hidden{display:none!important}
+  .hint{color:var(--muted);font-size:.9em}
+  .row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap}
+
+  /* Inicio */
+  #start .card{max-width:560px;margin:clamp(4px,3vh,28px) auto;text-align:center}
+  #start .hero{width:clamp(80px,20vw,120px);height:auto}
+  #start h2{font-size:clamp(1.35rem,4vw,1.9rem);color:var(--pad-dark);margin-top:4px}
+  #start p{color:var(--muted);line-height:1.5;margin:.6em 0}
+  #start input{
+    width:100%;font-size:1.05em;font-weight:600;padding:14px 16px;border-radius:14px;border:2px solid #bcd9d2;margin:10px 0 6px;outline:none;min-height:50px
+  }
+  #start input:focus{border-color:var(--pad-dark)}
+  .err{color:var(--bad);font-weight:700;min-height:1.3em;font-size:.9em}
+  .rules{text-align:left;background:#f1faf6;border-radius:14px;padding:12px 16px 12px 34px;margin:14px 0;font-size:.95em;line-height:1.45}
+  .rules li{margin:4px 0}
+  #btnStart{width:100%;max-width:340px}
+
+  /* HUD */
+  .hud{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:var(--gap)}
+  .pill{background:#fff;border-radius:999px;padding:.45em .9em;font-weight:700;box-shadow:0 3px 10px rgba(18,48,64,.1);font-size:.95em;
+        display:flex;align-items:center;gap:.35em;white-space:nowrap}
+  .pill b{font-family:var(--ff-title);font-size:1.15em}
+  .pill.name{min-width:0;flex:1 1 auto;max-width:100%}
+  .pill.name span{overflow:hidden;text-overflow:ellipsis}
+  .pill.ok b{color:var(--ok)} .pill.bad b{color:var(--bad)} .pill.score b{color:#b07d00}
+
+  /* Estanque */
+  .pond{
+    position:relative;border-radius:var(--radius);overflow:hidden;margin-bottom:var(--gap);
+    background:radial-gradient(ellipse at 30% 20%,#4fc3dc,#1f8fb5 60%,#146b8c);
+    box-shadow:inset 0 0 40px rgba(0,0,0,.2);
+  }
+  .pond svg{display:block;width:100%;height:auto}
+  .ripple{animation:rip 3s ease-out infinite;transform-origin:center;transform-box:fill-box}
+  @keyframes rip{0%{opacity:.6;transform:scale(.4)}100%{opacity:0;transform:scale(1.6)}}
+  .splash{animation:spl .9s ease-out forwards;transform-box:fill-box;transform-origin:center}
+  @keyframes spl{0%{opacity:1;transform:scale(.2)}100%{opacity:0;transform:scale(2)}}
+
+  /* Pregunta */
+  #qCard{max-width:860px;margin:0 auto}
+  .qnum{color:var(--muted);font-weight:800;font-size:.85em;margin-bottom:6px;text-transform:uppercase;letter-spacing:.03em}
+  .qtext{font-size:clamp(1.02rem,1.2vw + .75rem,1.3rem);line-height:1.5;font-weight:700;margin:0 0 14px;overflow-wrap:anywhere}
+  .opts{display:grid;gap:10px}
+  .opt{
+    display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;min-height:52px;
+    font-size:1em;font-weight:600;color:var(--ink);background:#f3fbf8;border:2px solid #cfe7df;border-radius:14px;
+    padding:12px 14px;cursor:pointer;transition:background .15s,border-color .15s;line-height:1.4;touch-action:manipulation
+  }
+  .opt span:last-child{overflow-wrap:anywhere;padding-top:3px}
+  @media (hover:hover){.opt:hover:not(:disabled){border-color:var(--pad);background:#e6f7ee}}
+  .opt:disabled{cursor:default}
+  .opt .lt{
+    flex:0 0 auto;width:32px;height:32px;border-radius:50%;background:var(--pad);color:#fff;
+    display:grid;place-items:center;font-family:var(--ff-title);font-weight:800
+  }
+  .opt.right{background:#dff5e6;border-color:var(--ok)} .opt.right .lt{background:var(--ok)}
+  .opt.wrong{background:#fbe3e3;border-color:var(--bad)} .opt.wrong .lt{background:var(--bad)}
+  .feedback{margin-top:12px;font-weight:800;font-size:1.02em;min-height:1.5em}
+  .feedback.ok{color:var(--ok)} .feedback.bad{color:var(--bad)}
+
+  /* Resultado */
+  #result .card{max-width:580px;margin:clamp(4px,3vh,24px) auto;text-align:center}
+  #result h2{font-size:clamp(1.35rem,4vw,1.9rem)}
+  .certificate{border:3px dashed #cfe7df;border-radius:18px;padding:clamp(12px,3vw,20px);margin:14px 0;background:#fbfffd}
+  .certificate .name{font-family:var(--ff-title);font-size:clamp(1.4rem,5vw,2rem);color:var(--pad-dark);line-height:1.1;overflow-wrap:anywhere}
+  .certificate .date{color:var(--muted);font-size:.88em;margin-top:4px}
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:clamp(6px,1.5vw,12px);margin-top:14px}
+  .stat{background:#f1faf6;border-radius:14px;padding:10px 4px}
+  .stat .v{font-family:var(--ff-title);font-size:clamp(1.4rem,5vw,2rem);font-weight:800;line-height:1}
+  .stat .k{font-size:.72em;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.04em;margin-top:4px}
+  .stat.ok .v{color:var(--ok)} .stat.bad .v{color:var(--bad)} .stat.sc .v{color:#b07d00}
+
+  .verif{margin-top:8px;font-size:.85em;color:var(--muted);font-family:ui-monospace,Consolas,monospace;overflow-wrap:anywhere}
+  .verif b{color:var(--ink);letter-spacing:.05em}
+  .tag{display:inline-block;padding:2px 8px;border-radius:999px;font-size:.78em;font-weight:800;white-space:nowrap}
+  .tag.done{background:#dff5e6;color:#1f6d37}.tag.inc{background:#fff2cc;color:#8a6100}.tag.alt{background:#fbe3e3;color:#a02626}
+  /* Historial */
+  #history .card{max-width:900px;margin:0 auto}
+  #history h2{font-size:clamp(1.3rem,3.5vw,1.8rem)}
+  .tablewrap{margin:12px 0}
+  table{width:100%;border-collapse:collapse;font-size:.95em}
+  th,td{padding:10px 8px;text-align:left;border-bottom:1px solid #e1efe9}
+  th{font-family:var(--ff-title);color:var(--muted);font-weight:700}
+  td.num,th.num{text-align:center} td.num{font-weight:800}
+  .empty{color:var(--muted);text-align:center;padding:24px}
+
+  /* ====== Breakpoints ====== */
+  /* Celulares */
+  @media (max-width:600px){
+    .btn-label{display:none}
+    #btnHistoryTop{padding:.6em .8em}
+    .hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+    .pill{justify-content:center;padding:.45em .4em;font-size:.9em}
+    .pill.name{grid-column:1 / -1;justify-content:flex-start;padding-left:.9em}
+    .row .btn{flex:1 1 100%}
+    /* Historial como tarjetas */
+    table,thead,tbody,tr,td{display:block;width:100%}
+    thead{display:none}
+    tr{background:#f7fcfa;border:1px solid #e1efe9;border-radius:14px;padding:8px 12px;margin-bottom:10px;
+       display:grid;grid-template-columns:repeat(3,1fr);gap:4px 8px}
+    td{border:0;padding:4px 0}
+    td[data-k="n"]{display:none}
+    td[data-k="estado"]{grid-column:1 / -1}
+    td[data-k="fecha"]{grid-column:1 / -1;color:var(--muted);font-size:.85em}
+    td[data-k="nombre"]{grid-column:1 / -1;font-weight:800;font-size:1.05em;overflow-wrap:anywhere}
+    td.num{text-align:left}
+    td.num::before{content:attr(data-label);display:block;font-size:.72em;color:var(--muted);font-weight:700;text-transform:uppercase}
+  }
+  /* Celulares muy pequeños */
+  @media (max-width:340px){
+    .hud{grid-template-columns:repeat(2,1fr)}
+    .stats{grid-template-columns:1fr}
+    .opt{gap:8px;padding:10px}
+  }
+  /* Celular / tablet en horizontal con poca altura */
+  @media (max-height:520px) and (orientation:landscape){
+    header{margin-bottom:6px}
+    header h1 small{display:none}
+    .hud{margin-bottom:6px}
+    #start .hero{display:none}
+    .pond{margin-bottom:8px}
+  }
+  /* Tablets y PC: opciones un poco más amplias */
+  @media (min-width:900px){
+    .opt{padding:14px 18px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🐸 Froggy Jumps<small>Módulo 2 · Lo que nos aleja de los demás</small></h1>
+    <button class="btn secondary" id="btnHistoryTop" aria-label="Ver historial">📋 <span class="btn-label">Historial</span></button>
+  </header>
+
+  <!-- INICIO -->
+  <section id="start">
+    <div class="card">
+      <svg class="hero" viewBox="0 0 120 90" aria-hidden="true">
+        <ellipse cx="60" cy="72" rx="52" ry="14" fill="#5cb85c"/>
+        <path d="M60 72 L112 66" stroke="#3d8b3d" stroke-width="3"/>
+        <g transform="translate(60 52)">
+          <ellipse cx="0" cy="6" rx="26" ry="18" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+          <circle cx="-12" cy="-10" r="9" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+          <circle cx="12" cy="-10" r="9" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+          <circle cx="-12" cy="-10" r="4.5" fill="#fff"/><circle cx="12" cy="-10" r="4.5" fill="#fff"/>
+          <circle cx="-11" cy="-10" r="2.4" fill="#123040"/><circle cx="13" cy="-10" r="2.4" fill="#123040"/>
+          <path d="M-9 8 Q0 15 9 8" stroke="#2a662a" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+        </g>
+      </svg>
+      <h2>¡Ayuda a la rana a cruzar el estanque!</h2>
+      <p>Responde las preguntas del Módulo 2 para saltar de nenúfar en nenúfar.</p>
+      <ul class="rules">
+        <li>🟢 Empiezas con <b>100 puntos</b>.</li>
+        <li>❌ Cada respuesta incorrecta resta <b id="ruleFrac">1/10 de los puntos</b> (<span id="rulePts">10</span> puntos).</li>
+        <li>☝️ Solo tienes <b>un intento</b> por pregunta.</li>
+        <li>📸 Al final, toma un pantallazo de tu resultado y envíalo por Teams.</li>
+      </ul>
+      <label for="playerName" class="hint">Escribe tu nombre completo</label>
+      <input id="playerName" type="text" maxlength="60" placeholder="Ej: María Fernanda López" autocomplete="name" enterkeyhint="go">
+      <div class="err" id="nameErr"></div>
+      <div class="row"><button class="btn" id="btnStart">¡Empezar a saltar! 🐸</button></div>
+    </div>
+  </section>
+
+  <!-- JUEGO -->
+  <section id="game" class="hidden">
+    <div class="hud">
+      <div class="pill name">👤 <span id="hudName"></span></div>
+      <div class="pill" title="Pregunta">❓ <b id="hudQ">1</b>/<span id="hudTotal">10</span></div>
+      <div class="pill ok" title="Aciertos">✔ <b id="hudOk">0</b></div>
+      <div class="pill bad" title="Fallos">✖ <b id="hudBad">0</b></div>
+      <div class="pill score" title="Puntaje">⭐ <b id="hudScore">100</b></div>
+    </div>
+    <div class="pond" id="pond"><svg id="pondSvg" role="img" aria-label="Estanque con nenúfares y la rana"></svg></div>
+    <div class="card" id="qCard">
+      <div class="qnum" id="qNum"></div>
+      <p class="qtext" id="qText"></p>
+      <div class="opts" id="qOpts"></div>
+      <div class="feedback" id="feedback" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <!-- RESULTADO -->
+  <section id="result" class="hidden">
+    <div class="card">
+      <h2 id="resTitle">¡Llegaste a la otra orilla! 🎉</h2>
+      <div class="certificate">
+        <div class="hint">Froggy Jumps · Módulo 2</div>
+        <div class="name" id="resName"></div>
+        <div class="date" id="resDate"></div>
+        <div class="verif">Partida <b id="resId"></b> · Código <b id="resCode"></b></div>
+        <div class="stats">
+          <div class="stat ok"><div class="v" id="resOk">0</div><div class="k">Aciertos</div></div>
+          <div class="stat bad"><div class="v" id="resBad">0</div><div class="k">Fallos</div></div>
+          <div class="stat sc"><div class="v" id="resScore">0</div><div class="k">Puntaje</div></div>
+        </div>
+      </div>
+      <p class="hint">📸 Toma un pantallazo de esta tarjeta y envíalo por Teams.</p>
+      <div class="row">
+        <button class="btn" id="btnAgain">Jugar de nuevo</button>
+        <button class="btn secondary" id="btnHistoryRes">Ver historial</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section id="history" class="hidden">
+    <div class="card">
+      <h2>📋 Historial de partidas</h2>
+      <p class="hint">Se guarda en este navegador y dispositivo. Los registros no se pueden editar ni borrar desde el juego; si alguno se modifica por fuera, aparecerá marcado como alterado.</p>
+      <div class="tablewrap" id="histTable"></div>
+      <div class="row">
+        <button class="btn" id="btnHistBack">Volver</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+(function(){
+'use strict';
+/* =====================================================================
+   PREGUNTAS (texto original, sin modificar). "c" = índice de la correcta
+   ===================================================================== */
+const QUESTIONS = Object.freeze([
+  {q:"Alguien que ya se siente solo interpreta que nadie le escribió el fin de semana como 'prueba' de que no le importa a nadie, sin notar que tampoco él escribió a nadie. ¿Qué está pasando?",
+   o:["Tiene razón, es un hecho objetivo",
+      "Su sensación previa de soledad está sesgando qué evidencia nota y cuál ignora",
+      "Sus amigos realmente lo abandonaron"], k:'1w1fvczlmyb'},
+  {q:"En una semana, tres personas del grupo le escribieron a Marcos para saludarlo y una no contestó su mensaje. Marcos termina la semana sintiéndose 'invisible para todos'. ¿Qué distorsión explica ese salto?",
+   o:["la única señal negativa pesó más que las tres positivas",
+      "Ninguna, es una conclusión justa",
+      "Sus amigos son poco confiables"], k:'2bw54oizmxf'},
+  {q:"Valentina deja de proponer planes porque la última vez sintió que 'molestaba'. Con el tiempo, la gente deja de invitarla también, porque ya no la ven activa en el grupo. ¿Cómo describirías este proceso?",
+   o:["Confirma que a nadie le interesaba de verdad",
+      "Debió proponer planes más interesantes",
+      "Un ciclo donde el miedo al rechazo genera evitación, la evitación reduce el contacto real"], k:'23y6k3f84s5'},
+  {q:"Compara: Camilo pasa el sábado solo porque decidió descansar y disfruta su tiempo; Andrea pasa el sábado sola porque le dio miedo escribirle a alguien por si la rechazaban. ¿Cuál de los dos está en mayor riesgo de sentirse más solo, y por qué?",
+   o:["Camilo, porque decidio estar solo",
+      "Andrea, porque su soledad nace de evitación por miedo",
+      "Ninguno, ambos están igual de solos ese día"], k:'ig37lukzbe'},
+  {q:"Dos personas en un grupo de amigos que no las incluyó en una foto. Una concluye 'ya no soy parte del grupo' y se aleja; la otra piensa 'tal vez no se dieron cuenta, les voy a escribir'. ¿que haria usted?",
+   o:["Me alejo, porque me sentí solo y lejos, no merecen mi amistad.",
+      "Les escribo, porque debo remitirme a los hechos y conocer las razones.",
+      "Peleo con ellos y les reclamo por su groseria, si no me incluyeron es porque no me querian ahi."], k:'1vk9adba49d'},
+  {q:"Alguien que se siente solo empieza a practicar la técnica de reevaluación cognitiva cada vez que interpreta un silencio como rechazo. ¿Por qué esta práctica, sostenida en el tiempo, podría reducir su soledad más que 'hacer más amigos nuevos'?",
+   o:["Porque hacer amigos nuevos nunca ayuda, siempre estare solo.",
+      "Porque el silencio sí es rechazo, y debo evaluar como estoy recibiendo ese rechazo.",
+      "Porque si el filtro que interpreta cada señal como rechazo no cambia, es probable que la persona repita el mismo patrón de evitación incluso con vínculos nuevos"], k:'1ea7n918mdi'},
+  {q:"¿Por qué dos personas con el mismo número de amigos pueden sentir niveles de soledad completamente distintos?",
+   o:["Por como filtran e interpretan las señales sociales.",
+      "Porque a una persona la quieren mas que a la otra.",
+      "Porque una se aisla por miedo al rechazo."], k:'o9ii98fg1x'},
+  {q:"Dos compañeros de trabajo reciben el mismo correo cortante de su jefe. Uno piensa \"debe estar bajo presión hoy\" y sigue su día normal; el otro piensa \"ya no confía en mi trabajo\" y empieza a evitar reuniones de equipo. Un mes después, ¿cuál de los dos probablemente reporte sentirse más aislado del equipo, y por qué?",
+   o:["Ninguno, el correo fue igual de cortante para ambos",
+      "El segundo, porque su interpretación lo llevó a evitar el contacto",
+      "el primero, porque no entiende la señal de rechazo del jefe"], k:'qyhaidpitj'},
+  {q:"Juan deja de comentar en el chat familiar porque una vez nadie respondió a un mensaje suyo. Con el tiempo, la familia deja de \"contar con él\" para planes porque parece desconectado. Si alguien le dijera a Juan \"tú te lo buscaste, dejaste de participar\", ¿qué le faltaría entender a esa persona sobre lo que le pasó a Juan?",
+   o:["Que Juan se sintio rechazado y es normal que haya reaccionado así.",
+      "Que Juan si queria estar lejos de su familia y busco una excusa.",
+      "Que Juan no busco ese desinteres de manera intensional."], k:'73rbkvrl6e'},
+  {q:"Dos estudiantes nuevos en una universidad se sienten igual de solos su primera semana. Uno se dice a sí mismo \"aquí nadie va a querer conocerme, siempre pasa igual\" y deja de intentarlo; el otro se dice \"apenas estoy llegando, es normal no conocer a nadie todavía\" y sigue asistiendo a actividades. ¿Qué decisión cree que es más viable con el tiempo?",
+   o:["Ninguna, ambos sienten lo mismo esa primera semana, así que el resultado será igual",
+      "la primera, porque sabe que no conocerá a nadie y decide no perder su tiempo",
+      "la segunda, ya que deja espacio para que la situación cambie con el tiempo, y no se limita a una situación temporal."], k:'25r5d902sgk'}
+]);
+
+/* Configuración */
+QUESTIONS.forEach(q=>{Object.freeze(q.o);Object.freeze(q);});
+const START_SCORE = 100;
+const PENALTY = START_SCORE / QUESTIONS.length;   // 100/10 = 10
+const STORAGE_KEY = 'froggyJumps_modulo2_historial_v2';
+const SALT = 'FJ-M2-rana-2026';
+const SECRET = 'FJ-M2-verif-\u00e1rbol-nen\u00fafar';
+
+/* Hash (cyrb53) para validar respuestas y firmar registros */
+function cyrb(str,seed=0){let h1=0xdeadbeef^seed,h2=0x41c6ce57^seed;for(let i=0,ch;i<str.length;i++){ch=str.charCodeAt(i);h1=Math.imul(h1^ch,2654435761);h2=Math.imul(h2^ch,1597334677);}h1=Math.imul(h1^(h1>>>16),2246822507);h1^=Math.imul(h2^(h2>>>13),3266489909);h2=Math.imul(h2^(h2>>>16),2246822507);h2^=Math.imul(h1^(h1>>>13),3266489909);return (4294967296*(2097151&h2)+(h1>>>0)).toString(36);}
+function clean(x){return String(x).toUpperCase().replace(/O/g,'0').replace(/I/g,'1');}  // evita confundir O/0 e I/1
+function isCorrect(qi,opt){return cyrb(SALT+'|'+qi+'|'+QUESTIONS[qi].o[opt])===QUESTIONS[qi].k;}
+function scoreFor(bad){return Math.round(Math.max(0,START_SCORE-bad*PENALTY)*100)/100;}
+function signRec(r){return cyrb(SECRET+'|'+[r.id,r.nombre,r.inicio,r.fecha,r.aciertos,r.fallos,r.puntaje,r.estado,r.respondidas].join('|'));}
+function verifCode(r){const h=cyrb(SECRET+'|code|'+[r.id,r.nombre,r.aciertos,r.fallos,r.puntaje].join('|')).padStart(8,'0');const c=clean(h);return c.slice(0,4)+'-'+c.slice(4,8);}
+function recValid(r){
+  if(!r||typeof r!=='object')return false;
+  if(r.sig!==signRec(r))return false;
+  if(r.aciertos+r.fallos!==r.respondidas||r.respondidas>QUESTIONS.length)return false;
+  if(r.puntaje!==scoreFor(r.fallos))return false;
+  if(r.estado==='completa'&&r.respondidas!==QUESTIONS.length)return false;
+  return true;
+}
+const LETTERS = ['a','b','c','d','e'];
+
+let state = null;   // privado: no accesible desde la consola
+
+/* Utilidades */
+const $ = id => document.getElementById(id);
+const fmt = n => (Math.round(n*100)/100).toLocaleString('es-CO',{maximumFractionDigits:2});
+function shuffle(a){a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function show(id){['start','game','result','history'].forEach(s=>$(s).classList.toggle('hidden',s!==id));window.scrollTo({top:0,behavior:'smooth'});if(id==='game')buildPond();}
+function loadHist(){try{return JSON.parse(localStorage.getItem(STORAGE_KEY))||[];}catch(e){return [];}}
+function saveHist(h){try{localStorage.setItem(STORAGE_KEY,JSON.stringify(h));}catch(e){}}
+function persist(){
+  // guarda/actualiza el registro de la partida actual (se llama después de CADA respuesta)
+  const r={id:state.id,nombre:state.name,inicio:state.start.toISOString(),fecha:new Date().toISOString(),
+    aciertos:state.ok,fallos:state.bad,puntaje:scoreFor(state.bad),respondidas:state.ok+state.bad,
+    estado:(state.ok+state.bad>=QUESTIONS.length)?'completa':'incompleta'};
+  r.sig=signRec(r);
+  const h=loadHist().filter(x=>x&&x.id!==r.id); h.unshift(r); saveHist(h);
+  return r;
+}
+function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
+/* ================= Estanque responsivo (SVG) =================
+   El estanque se redibuja según el ancho disponible:
+   - PC / tablet horizontal: una sola fila
+   - Tablet vertical / celular grande: 2 filas en zigzag
+   - Celular: 3 filas en zigzag                                   */
+const NS='http://www.w3.org/2000/svg';
+let pads=[], frogG=null, frogPos={x:0,y:0}, geo={s:1};
+let padStatus=[], frogAt=0, animating=false, pendingRebuild=false;
+function el(tag,attrs,parent){const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);if(parent)parent.appendChild(e);return e;}
+
+function layout(W){
+  const n=QUESTIONS.length+2;                // salida + 7 nenúfares + meta
+  const cols = W>=900 ? n : (W>=460 ? Math.ceil(n/2) : Math.ceil(n/3));
+  const rows = Math.ceil(n/cols);
+  const cellW = W/cols;
+  let rowH = rows===1 ? Math.max(150,Math.min(W*0.2,220)) : Math.max(92,Math.min(cellW*1.05,130));
+  // No dejar que el estanque ocupe más de ~40% del alto de la pantalla
+  const vh = window.innerHeight || 800;
+  rowH = Math.min(rowH, Math.max(rows===1?110:78, (vh*0.4)/rows));
+  const H = rows*rowH + (rows===1?0:16);
+  const s = Math.max(.6,Math.min(1.15,cellW/100,rowH/(rows===1?150:100))); // escala de nenúfar/rana
+  const pts=[];
+  for(let i=0;i<n;i++){
+    const r=Math.floor(i/cols); let c=i%cols;
+    if(r%2===1) c=cols-1-c;                         // zigzag
+    const wob = rows===1 ? Math.sin(i*1.3)*rowH*0.18 : Math.sin(i*2.1)*rowH*0.08;
+    pts.push({x:cellW*(c+.5), y:(rows===1?0:8)+r*rowH+rowH*.58+wob});
+  }
+  return {W,H,s,pts,rows,cols};
+}
+
+function buildPond(){
+  if(!state || $('game').classList.contains('hidden')) return;
+  if(animating){pendingRebuild=true;return;}
+  const W=Math.round($('pond').clientWidth)||800;
+  const L=layout(W); geo=L; pads=L.pts;
+  const svg=$('pondSvg'); svg.innerHTML='';
+  svg.setAttribute('viewBox',`0 0 ${L.W} ${L.H}`);
+  const s=L.s, n=pads.length;
+
+  // ondas decorativas
+  for(let i=0;i<Math.max(4,Math.round(W/150));i++){
+    el('ellipse',{cx:(i+.5)*(W/Math.max(4,Math.round(W/150))),cy:(i%2? L.H*.82 : L.H*.16),rx:36*s,ry:10*s,fill:'none',
+      stroke:'rgba(255,255,255,.35)','stroke-width':2,class:'ripple',style:`animation-delay:${i*.5}s`},svg);
+  }
+  // camino
+  el('path',{d:'M'+pads.map(p=>p.x.toFixed(1)+' '+p.y.toFixed(1)).join(' L'),fill:'none',stroke:'rgba(255,255,255,.4)',
+    'stroke-width':3,'stroke-dasharray':'4 10','stroke-linecap':'round'},svg);
+  // orillas (salida y meta)
+  [0,n-1].forEach(i=>{
+    const p=pads[i];
+    el('ellipse',{cx:p.x,cy:p.y+6*s,rx:46*s,ry:22*s,fill:'rgba(0,0,0,.15)'},svg);
+    el('ellipse',{cx:p.x,cy:p.y,rx:46*s,ry:22*s,fill:'#8bc34a',stroke:'#5f8f2a','stroke-width':2},svg);
+    const t=el('text',{x:p.x,y:p.y-(i?16:18)*s,'text-anchor':'middle','font-size':Math.max(10,11*s),'font-weight':800,
+      fill:'#fff','font-family':'Nunito, system-ui, sans-serif',stroke:'#2a662a','stroke-width':3,'paint-order':'stroke'},svg);
+    t.textContent=i?'META 🏁':'SALIDA';
+  });
+  // nenúfares
+  for(let i=1;i<n-1;i++){
+    const p=pads[i];
+    const g=el('g',{id:'pad'+i},svg);
+    el('ellipse',{cx:p.x,cy:p.y+7*s,rx:42*s,ry:15*s,fill:'rgba(0,0,0,.15)'},g);
+    el('ellipse',{cx:p.x,cy:p.y,rx:42*s,ry:16*s,fill:'#5cb85c',stroke:'#3d8b3d','stroke-width':2,class:'padShape'},g);
+    el('path',{d:`M${p.x} ${p.y} L${p.x+40*s} ${p.y-5*s}`,stroke:'#3d8b3d','stroke-width':3},g);
+    el('text',{x:p.x-14*s,y:p.y+5*s,'font-size':Math.max(10,13*s),'font-weight':800,fill:'#1f4f1f','font-family':'Nunito, system-ui, sans-serif'},g).textContent=i;
+    if(padStatus[i]!==undefined) decoratePad(i,padStatus[i]);
+  }
+  // rana
+  frogG=el('g',{},svg);
+  frogG.innerHTML=`
+    <ellipse cx="0" cy="4" rx="22" ry="15" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+    <ellipse cx="-17" cy="14" rx="8" ry="4" fill="#6cc447" stroke="#3f9e2f" stroke-width="1.5"/>
+    <ellipse cx="17" cy="14" rx="8" ry="4" fill="#6cc447" stroke="#3f9e2f" stroke-width="1.5"/>
+    <circle cx="-10" cy="-9" r="7.5" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+    <circle cx="10" cy="-9" r="7.5" fill="#7ed957" stroke="#3f9e2f" stroke-width="2"/>
+    <circle cx="-10" cy="-9" r="4" fill="#fff"/><circle cx="10" cy="-9" r="4" fill="#fff"/>
+    <circle cx="-9" cy="-9" r="2" fill="#123040"/><circle cx="11" cy="-9" r="2" fill="#123040"/>
+    <path id="frogMouth" d="M-8 5 Q0 11 8 5" stroke="#2a662a" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+  placeFrog(pads[frogAt].x,pads[frogAt].y-12*s);
+}
+function placeFrog(x,y,sx=1,sy=1){frogPos={x,y};const s=geo.s;frogG.setAttribute('transform',`translate(${x} ${y}) scale(${sx*s} ${sy*s})`);}
+function setMouth(sad){const m=document.getElementById('frogMouth');if(m)m.setAttribute('d',sad?'M-8 9 Q0 3 8 9':'M-8 5 Q0 11 8 5');}
+
+function jumpTo(i){
+  return new Promise(res=>{
+    animating=true;
+    const from={...frogPos}; const to={x:pads[i].x,y:pads[i].y-12*geo.s};
+    const dur=650, h=Math.max(45,Math.abs(to.y-from.y)*.4+60*geo.s), t0=performance.now();
+    function step(t){
+      const k=Math.min(1,(t-t0)/dur);
+      const x=from.x+(to.x-from.x)*k;
+      const y=from.y+(to.y-from.y)*k - h*4*k*(1-k);
+      const sq=k<.15?1-k:(k>.85?k:1);
+      placeFrog(x,y,1/sq*.95,sq);
+      if(k<1)requestAnimationFrame(step);
+      else{placeFrog(to.x,to.y);frogAt=i;animating=false;res();}
+    }
+    requestAnimationFrame(step);
+  });
+}
+function splashAt(x,y){
+  const svg=$('pondSvg');
+  for(let r=0;r<3;r++){
+    const c=el('circle',{cx:x,cy:y,r:(14+r*8)*geo.s,fill:'none',stroke:'#fff','stroke-width':3,class:'splash',style:`animation-delay:${r*.12}s`},svg);
+    setTimeout(()=>c.remove(),1300);
+  }
+}
+function sinkAndRise(){
+  return new Promise(res=>{
+    animating=true;
+    const base={...frogPos}; const t0=performance.now(); const dur=1100;
+    splashAt(base.x,base.y+14*geo.s);
+    function step(t){
+      const k=Math.min(1,(t-t0)/dur);
+      frogG.style.opacity = k<.5 ? 1-k : k;
+      placeFrog(base.x,base.y+Math.sin(k*Math.PI)*26*geo.s);
+      if(k<1)requestAnimationFrame(step); else{frogG.style.opacity=1;placeFrog(base.x,base.y);animating=false;res();}
+    }
+    requestAnimationFrame(step);
+  });
+}
+function decoratePad(i,ok){
+  const g=document.getElementById('pad'+i); if(!g)return;
+  const s=g.querySelector('.padShape');
+  s.setAttribute('fill',ok?'#5cb85c':'#c9a24a');
+  s.setAttribute('stroke',ok?'#2e7d32':'#8a6a1c');
+  const p=pads[i];
+  el('text',{x:p.x+12*geo.s,y:p.y-3*geo.s,'font-size':Math.max(11,15*geo.s)},g).textContent=ok?'🌸':'💧';
+}
+function markPad(i,ok){padStatus[i]=ok;decoratePad(i,ok);}
+function afterAnim(){if(pendingRebuild){pendingRebuild=false;buildPond();}}
+
+/* Redibujar al cambiar tamaño/orientación */
+let rT=null;
+window.addEventListener('resize',()=>{clearTimeout(rT);rT=setTimeout(buildPond,150);});
+if('ResizeObserver' in window){new ResizeObserver(()=>{clearTimeout(rT);rT=setTimeout(buildPond,150);}).observe(document.getElementById('pond'));}
+
+/* ================= Juego ================= */
+function startGame(){
+  const name=$('playerName').value.trim().replace(/\s+/g,' ');
+  if(name.length<3){$('nameErr').textContent='Por favor escribe tu nombre (mínimo 3 letras).';$('playerName').focus();return;}
+  $('nameErr').textContent='';
+  $('playerName').blur();
+  const t=new Date();
+  state={id:clean(t.getTime().toString(36)+Math.floor(Math.random()*1296).toString(36).padStart(2,'0')),
+         name,order:shuffle(QUESTIONS.map((_,i)=>i)),idx:0,ok:0,bad:0,score:START_SCORE,locked:false,start:t,answered:new Set()};
+  persist();   // la partida queda registrada desde el inicio (si se abandona, queda como incompleta)
+  padStatus=[]; frogAt=0; animating=false; pendingRebuild=false;
+  $('hudName').textContent=name; $('hudTotal').textContent=QUESTIONS.length;
+  show('game'); updateHud(); renderQuestion();
+}
+function updateHud(){
+  $('hudQ').textContent=Math.min(state.idx+1,QUESTIONS.length);
+  $('hudOk').textContent=state.ok; $('hudBad').textContent=state.bad; $('hudScore').textContent=fmt(state.score);
+}
+function renderQuestion(){
+  const Q=QUESTIONS[state.order[state.idx]];
+  $('qNum').textContent=`Pregunta ${state.idx+1} de ${QUESTIONS.length} · Nenúfar ${state.idx+1}`;
+  $('qText').textContent=Q.q;
+  $('feedback').textContent=''; $('feedback').className='feedback';
+  const box=$('qOpts'); box.innerHTML='';
+  Q.o.forEach((txt,i)=>{
+    const b=document.createElement('button'); b.className='opt'; b.type='button';
+    b.innerHTML=`<span class="lt">${LETTERS[i]}</span><span>${esc(txt)}</span>`;
+    b.onclick=()=>answer(i,b);
+    box.appendChild(b);
+  });
+  state.locked=false; setMouth(false);
+}
+function scrollToPond(){
+  const r=$('pond').getBoundingClientRect();
+  if(r.top<0||r.bottom>window.innerHeight) $('pond').scrollIntoView({behavior:'smooth',block:'center'});
+}
+async function answer(i,btn){
+  if(state.locked)return; state.locked=true;
+  const qi=state.order[state.idx];
+  if(state.answered.has(qi))return;          // una sola respuesta por pregunta
+  state.answered.add(qi);
+  const ok=isCorrect(qi,i);
+  [...$('qOpts').children].forEach(b=>b.disabled=true);
+  const pad=state.idx+1;
+  scrollToPond();
+  if(ok){
+    state.ok++; btn.classList.add('right');
+    persist();
+    $('feedback').textContent='¡Correcto! 🐸 La rana salta al siguiente nenúfar.'; $('feedback').className='feedback ok';
+    updateHud(); await jumpTo(pad); markPad(pad,true);
+  }else{
+    state.bad++; state.score=scoreFor(state.bad);
+    btn.classList.add('wrong');
+    persist();
+    $('feedback').textContent=`Incorrecto 💦 Pierdes ${fmt(PENALTY)} puntos, pero la rana sigue su camino.`; $('feedback').className='feedback bad';
+    updateHud(); setMouth(true); await jumpTo(pad); await sinkAndRise(); markPad(pad,false);
+  }
+  afterAnim();
+  await new Promise(r=>setTimeout(r,900));
+  state.idx++;
+  if(state.idx>=QUESTIONS.length){await jumpTo(pads.length-1); afterAnim(); setMouth(false); finish();}
+  else{updateHud(); renderQuestion(); window.scrollTo({top:0,behavior:'smooth'});}
+}
+function finish(){
+  const rec=persist();
+  const end=new Date(rec.fecha);
+  $('resTitle').textContent= state.bad===0?'¡Cruce perfecto! 🏆':'¡Llegaste a la otra orilla! 🎉';
+  $('resName').textContent=rec.nombre;
+  $('resDate').textContent=end.toLocaleString('es-CO',{dateStyle:'full',timeStyle:'short'});
+  $('resOk').textContent=rec.aciertos; $('resBad').textContent=rec.fallos; $('resScore').textContent=fmt(rec.puntaje);
+  $('resId').textContent=rec.id; $('resCode').textContent=verifCode(rec);
+  state=null;
+  show('result');
+}
+
+/* ================= Historial ================= */
+function renderHistory(){
+  const h=loadHist();
+  if(!h.length){$('histTable').innerHTML='<div class="empty">Aún no hay partidas registradas en este navegador.</div>';return;}
+  $('histTable').innerHTML=`<table><thead><tr><th>#</th><th>Fecha</th><th>Nombre</th><th class="num">Aciertos</th><th class="num">Fallos</th><th class="num">Puntaje</th><th>Estado</th></tr></thead><tbody>${
+    h.map((r,i)=>{
+      const ok=recValid(r);
+      const tag=!ok?'<span class="tag alt">⚠ Alterado</span>':(r.estado==='completa'?'<span class="tag done">Completa</span>':`<span class="tag inc">Incompleta (${r.respondidas}/${QUESTIONS.length})</span>`);
+      const d=new Date(r&&r.fecha); const ds=isNaN(d)?'—':d.toLocaleString('es-CO',{dateStyle:'short',timeStyle:'short'});
+      return `<tr>
+      <td data-k="n">${h.length-i}</td>
+      <td data-k="fecha">${esc(ds)}</td>
+      <td data-k="nombre">${esc(r&&r.nombre||'—')}</td>
+      <td class="num" data-label="Aciertos" style="color:var(--ok)">${ok?r.aciertos:'—'}</td>
+      <td class="num" data-label="Fallos" style="color:var(--bad)">${ok?r.fallos:'—'}</td>
+      <td class="num" data-label="Puntaje">${ok?fmt(r.puntaje):'—'}</td>
+      <td data-k="estado">${tag}</td></tr>`;}).join('')
+  }</tbody></table>`;
+}
+
+/* Reglas dinámicas según número de preguntas */
+$('ruleFrac').textContent=`1/${QUESTIONS.length} de los puntos`;
+$('rulePts').textContent=fmt(PENALTY);
+$('hudTotal').textContent=QUESTIONS.length;
+
+/* Eventos */
+let prevScreen='start';
+function openHistory(){prevScreen=['start','game','result'].find(s=>!$(s).classList.contains('hidden'))||'start';renderHistory();show('history');}
+$('btnStart').onclick=startGame;
+$('playerName').addEventListener('keydown',e=>{if(e.key==='Enter')startGame();});
+$('btnHistoryTop').onclick=openHistory;
+$('btnHistoryRes').onclick=openHistory;
+$('btnHistBack').onclick=()=>show(prevScreen);
+$('btnAgain').onclick=()=>{$('playerName').value='';show('start');$('playerName').focus();};
+})();
+</script>
+</body>
+</html>
